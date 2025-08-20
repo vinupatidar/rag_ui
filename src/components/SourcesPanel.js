@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { apiUrl } from '../config';
 
 
-const SourcesPanel = ({ sources, onAddSource, onNewChat }) => {
+const SourcesPanel = ({ sources, onAddSource, onNewChat, onRemoveSource }) => {
   const [uploadType, setUploadType] = useState('file');
   const [fileInput, setFileInput] = useState(null);
   const [urlInput, setUrlInput] = useState('');
@@ -771,6 +771,18 @@ const SourcesPanel = ({ sources, onAddSource, onNewChat }) => {
                     <p className="text-xs text-gray-500 dark:text-gray-400">
                       Uploaded: {source.timestamp}
                     </p>
+                  </div>
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => onRemoveSource && onRemoveSource(source.id)}
+                      className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-600"
+                      title="Remove source"
+                    >
+                      <svg className="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
               </div>

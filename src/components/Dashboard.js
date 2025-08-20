@@ -100,6 +100,10 @@ const Dashboard = ({ onNavigateToLanding }) => {
     setSources([...sources, source]);
   };
 
+  const handleRemoveSource = (sourceId) => {
+    setSources((prev) => prev.filter((s) => s.id !== sourceId));
+  };
+
   const handleNewChat = () => {
     setChatHistory([]);
     try {
@@ -215,6 +219,7 @@ const Dashboard = ({ onNavigateToLanding }) => {
             sources={sources} 
             onAddSource={handleAddSource}
             onNewChat={handleNewChat}
+            onRemoveSource={handleRemoveSource}
           />
         </div>
         
