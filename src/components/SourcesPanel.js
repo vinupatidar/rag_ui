@@ -17,6 +17,8 @@ const SourcesPanel = ({ sources, onAddSource, onNewChat, onRemoveSource }) => {
   const [textError, setTextError] = useState('');
   const [uploading, setUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState('');
+  const [deletingId, setDeletingId] = useState(null);
+  const [deleteError, setDeleteError] = useState('');
 
   // Auto-hide success after 10 seconds
   useEffect(() => {
@@ -110,7 +112,8 @@ const SourcesPanel = ({ sources, onAddSource, onNewChat, onRemoveSource }) => {
     }
 
     const message = String(payload?.data || 'Indexing Completed for the given website');
-    return message;
+    const fileId = payload?.fileID || payload?.fileId || payload?.id;
+    return { message, fileId };
   };
 
   const uploadYoutubeToServer = async (url) => {
@@ -133,7 +136,8 @@ const SourcesPanel = ({ sources, onAddSource, onNewChat, onRemoveSource }) => {
     }
 
     const message = String(payload?.data || 'Indexing Completed for the given video');
-    return message;
+    const fileId = payload?.fileID || payload?.fileId || payload?.id;
+    return { message, fileId };
   };
 
   const uploadFileToServer = async (file) => {
@@ -165,7 +169,8 @@ const SourcesPanel = ({ sources, onAddSource, onNewChat, onRemoveSource }) => {
       throw new Error(message || 'Unexpected response from server');
     }
 
-    return message;
+    const fileId = payload?.fileID || payload?.fileId || payload?.id;
+    return { message, fileId };
   };
 
   const uploadPlainTextToServer = async (text) => {
@@ -188,7 +193,8 @@ const SourcesPanel = ({ sources, onAddSource, onNewChat, onRemoveSource }) => {
     }
 
     const message = String(payload?.data || 'Indexing Completed for the given text');
-    return message;
+    const fileId = payload?.fileID || payload?.fileId || payload?.id;
+    return { message, fileId };
   };
 
   const handleFileUpload = (event) => {
@@ -207,8 +213,8 @@ const SourcesPanel = ({ sources, onAddSource, onNewChat, onRemoveSource }) => {
           }
 
           try {
-            const msg = await uploadFileToServer(file);
-            setUploadSuccess(msg);
+            const { message, fileId } = await uploadFileToServer(file);
+            setUploadSuccess(message);
             const source = {
               id: Date.now() + Math.random(),
               type: 'file',
@@ -221,7 +227,8 @@ const SourcesPanel = ({ sources, onAddSource, onNewChat, onRemoveSource }) => {
           hour: 'numeric',
           minute: '2-digit',
           hour12: true
-        })
+        }),
+              fileId,
             };
             onAddSource(source);
           } catch (err) {
@@ -256,7 +263,7 @@ const SourcesPanel = ({ sources, onAddSource, onNewChat, onRemoveSource }) => {
 
     setUploading(true);
     try {
-      const msg = await uploadWebsiteToServer(urlInput.trim());
+      const { message: msg, fileId } = await uploadWebsiteToServer(urlInput.trim());
       setUploadSuccess(msg);
 
       const source = {
@@ -270,7 +277,8 @@ const SourcesPanel = ({ sources, onAddSource, onNewChat, onRemoveSource }) => {
           hour: 'numeric',
           minute: '2-digit',
           hour12: true
-        })
+        }),
+        fileId,
       };
       onAddSource(source);
       setUrlInput('');
@@ -298,7 +306,7 @@ const SourcesPanel = ({ sources, onAddSource, onNewChat, onRemoveSource }) => {
 
     setUploading(true);
     try {
-      const msg = await uploadYoutubeToServer(youtubeInput.trim());
+      const { message: msg, fileId } = await uploadYoutubeToServer(youtubeInput.trim());
       setUploadSuccess(msg);
 
       const source = {
@@ -312,7 +320,8 @@ const SourcesPanel = ({ sources, onAddSource, onNewChat, onRemoveSource }) => {
           hour: 'numeric',
           minute: '2-digit',
           hour12: true
-        })
+        }),
+        fileId,
       };
       onAddSource(source);
       setYoutubeInput('');
@@ -347,7 +356,7 @@ const SourcesPanel = ({ sources, onAddSource, onNewChat, onRemoveSource }) => {
 
     setUploading(true);
     try {
-      const msg = await uploadPlainTextToServer(trimmed);
+      const { message: msg, fileId } = await uploadPlainTextToServer(trimmed);
       setUploadSuccess(msg);
 
       const source = {
@@ -362,7 +371,8 @@ const SourcesPanel = ({ sources, onAddSource, onNewChat, onRemoveSource }) => {
           hour: 'numeric',
           minute: '2-digit',
           hour12: true
-        })
+        }),
+        fileId,
       };
       onAddSource(source);
       setTextInput('');
@@ -773,16 +783,21 @@ const SourcesPanel = ({ sources, onAddSource, onNewChat, onRemoveSource }) => {
                       Uploaded: {source.timestamp}
                     </p>
                   </div>
-                  <div>
+                  <div className="flex items-center space-x-2">
                     <button
                       type="button"
-                      onClick={() => onRemoveSource && onRemoveSource(source.id)}
+                      onClick={() => onRemoveSource && onRemoveSource(source.id, source.fileId)}
                       className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-600"
                       title="Remove source"
+                      disabled={deletingId === source.id}
                     >
-                      <svg className="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
+                      {deletingId === source.id ? (
+                        <span className="inline-block w-4 h-4 border-2 border-current/40 border-t-current rounded-full animate-spin" />
+                      ) : (
+                        <svg className="w-4 h-4 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      )}
                     </button>
                   </div>
                 </div>

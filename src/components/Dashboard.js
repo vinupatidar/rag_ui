@@ -100,7 +100,18 @@ const Dashboard = ({ onNavigateToLanding }) => {
     setSources([...sources, source]);
   };
 
-  const handleRemoveSource = (sourceId) => {
+  const handleRemoveSource = async (sourceId, fileId) => {
+    try {
+      if (fileId) {
+        await fetch(apiUrl('api/delete'), {
+          method: 'POST',
+          headers: {
+            'usersessionid': getUserSessionId(),
+            'fileid': String(fileId)
+          }
+        });
+      }
+    } catch {}
     setSources((prev) => prev.filter((s) => s.id !== sourceId));
   };
 
