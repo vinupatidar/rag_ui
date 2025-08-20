@@ -68,7 +68,7 @@ const SourcesPanel = ({ sources, onAddSource }) => {
         return 'Please enter a valid YouTube URL (youtube.com or youtu.be)';
       }
       
-      const res = await fetch(process.env.BACKEND_BASE_URL + 'api/youtube', {
+      const res = await fetch(process.env.NEXT_PUBLIC_BACKEND_BASE_URL + 'api/youtube', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url })
@@ -107,7 +107,7 @@ const SourcesPanel = ({ sources, onAddSource }) => {
     const formData = new FormData();
     formData.append('file', file);
 
-    const res = await fetch(process.env.BACKEND_BASE_URL = 'api/upload/', {
+    const res = await fetch(process.env.NEXT_PUBLIC_BACKEND_BASE_URL = 'api/upload/', {
       method: 'POST',
       body: formData,
     });
@@ -135,7 +135,7 @@ const SourcesPanel = ({ sources, onAddSource }) => {
   };
 
   const uploadPlainTextToServer = async (text) => {
-    const res = await fetch(process.env.BACKEND_BASE_URL + 'api/plaintext', {
+    const res = await fetch(process.env.NEXT_PUBLIC_BACKEND_BASE_URL + 'api/plaintext', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text })

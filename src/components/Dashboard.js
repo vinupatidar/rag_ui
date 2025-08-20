@@ -116,7 +116,7 @@ const Dashboard = ({ onNavigateToLanding }) => {
     setCurrentInput('');
 
     try {
-      const response = await fetch(process.env.BACKEND_BASE_URL + 'api/search/', {
+      const response = await fetch(process.env.NEXT_PUBLIC_BACKEND_BASE_URL + 'api/search/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
