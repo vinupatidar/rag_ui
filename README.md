@@ -1,46 +1,180 @@
-# Getting Started with Create React App
+# Nooto - AI-Powered Chat Board Landing Page
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern, responsive landing page for an AI-powered notebook platform that allows users to upload files, analyze websites, and get intelligent answers through AI chat.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- **Modern Design**: Clean, minimalist design with gradient blue color scheme
+- **Responsive Layout**: Fully responsive design that works on all devices
+- **Interactive Elements**: Smooth animations and hover effects
+- **AI-Focused Content**: Content specifically tailored for AI LLM-based chat board functionality
+- **Call-to-Action**: Multiple CTAs that redirect to the main chat dashboard
 
-### `npm start`
+## Tech Stack
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- **React.js** - Modern React with functional components and hooks
+- **Tailwind CSS** - Utility-first CSS framework for rapid UI development
+- **PostCSS** - CSS processing with autoprefixer
+- **Responsive Design** - Mobile-first approach with breakpoint utilities
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## Project Structure
 
-### `npm test`
+```
+nooto-landing/
+├── public/
+│   └── index.html
+├── src/
+│   ├── components/
+│   │   ├── Header.js
+│   │   ├── Hero.js
+│   │   ├── Features.js
+│   │   ├── HowItWorks.js
+│   │   └── Footer.js
+│   ├── App.js
+│   ├── index.js
+│   └── index.css
+├── package.json
+├── tailwind.config.js
+├── postcss.config.js
+└── README.md
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Components
 
-### `npm run build`
+### Header
+- Website name "Nooto" on the left
+- "Try Nooto" button on the right that redirects to `/dashboard`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Hero
+- Compelling headline about AI-powered document analysis
+- Call-to-action buttons
+- Visual representation of key features
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Features
+- Six key features highlighting platform capabilities
+- Icons with gradient backgrounds
+- Hover effects and animations
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### How It Works
+- Step-by-step process explanation
+- Visual flow with numbered steps
+- Additional CTA section
 
-### `npm run eject`
+### Footer
+- Company information and social links
+- Quick navigation links
+- Legal information
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+## Getting Started
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Prerequisites
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+- Node.js (version 14 or higher)
+- npm or yarn package manager
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+### Installation
 
-## Learn More
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd nooto-landing
+   ```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+3. **Start the development server**
+   ```bash
+   npm start
+   ```
+
+4. **Open your browser**
+   Navigate to `http://localhost:3000`
+
+### Build for Production
+
+```bash
+npm run build
+```
+
+This creates an optimized production build in the `build/` folder.
+
+## Customization
+
+### Colors
+The gradient blue theme can be customized in `tailwind.config.js`:
+
+```javascript
+colors: {
+  'gradient-blue': {
+    50: '#eff6ff',
+    100: '#dbeafe',
+    // ... more color variations
+  }
+}
+```
+
+### Content
+Update the content in each component file to match your specific needs:
+- `src/components/Hero.js` - Main headline and description
+- `src/components/Features.js` - Feature descriptions and icons
+- `src/components/HowItWorks.js` - Process steps and descriptions
+
+### Redirect URLs
+Update the dashboard redirect URLs in:
+- `src/components/Header.js` - "Try Nooto" button
+- `src/components/Hero.js` - "Get Started Free" button
+- `src/components/HowItWorks.js` - "Start Using Nooto" button
+
+## Deployment
+
+### Netlify
+1. Connect your GitHub repository
+2. Set build command: `npm run build`
+3. Set publish directory: `build`
+
+### Vercel
+1. Import your GitHub repository
+2. Vercel will automatically detect React and build the project
+
+### GitHub Pages
+1. Add `"homepage": "https://username.github.io/repository-name"` to `package.json`
+2. Install `gh-pages`: `npm install --save-dev gh-pages`
+3. Add deploy script: `"deploy": "gh-pages -d build"`
+4. Run `npm run deploy`
+
+## Browser Support
+
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
+
+## Performance
+
+- Optimized images and assets
+- CSS purging with Tailwind
+- Lazy loading for better performance
+- Responsive images and icons
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License.
+
+## Support
+
+For support and questions, please open an issue in the GitHub repository.
+
+---
+
+**Note**: This landing page is designed to redirect users to a main chat dashboard at `/dashboard`. Make sure to implement the dashboard route in your application or update the redirect URLs to point to your actual dashboard location.
