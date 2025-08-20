@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { apiUrl } from '../config';
+import { apiUrl, getUserSessionId } from '../config';
 import Header from './DashboardHeader';
 import SourcesPanel from './SourcesPanel';
 import ChatPanel from './ChatPanel';
@@ -131,7 +131,8 @@ const Dashboard = ({ onNavigateToLanding }) => {
       const response = await fetch(apiUrl('api/search/'), {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'usersessionid': getUserSessionId()
         },
         body: JSON.stringify({ input: message })
       });

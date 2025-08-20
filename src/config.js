@@ -21,4 +21,24 @@ export function apiUrl(path) {
   return BACKEND_BASE_URL + cleanPath;
 }
 
+export function getUserSessionId() {
+  try {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return 'unknown-session';
+    }
+    const key = 'usersessionid';
+    let id = window.localStorage.getItem(key);
+    if (!id) {
+      const gen = (window.crypto && window.crypto.randomUUID)
+        ? window.crypto.randomUUID()
+        : `uid-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+      id = gen;
+      window.localStorage.setItem(key, id);
+    }
+    return id;
+  } catch {
+    return `uid-${Date.now()}`;
+  }
+}
+
 

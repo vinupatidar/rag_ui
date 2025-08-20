@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { apiUrl } from '../config';
+import { apiUrl, getUserSessionId } from '../config';
 
 
 const SourcesPanel = ({ sources, onAddSource, onNewChat, onRemoveSource }) => {
@@ -93,7 +93,7 @@ const SourcesPanel = ({ sources, onAddSource, onNewChat, onRemoveSource }) => {
     const res = await fetch(apiUrl('api/website/'), {
       method: 'POST',
       mode: 'cors',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'usersessionid': getUserSessionId() },
       body: JSON.stringify({ url })
     });
 
@@ -116,7 +116,7 @@ const SourcesPanel = ({ sources, onAddSource, onNewChat, onRemoveSource }) => {
   const uploadYoutubeToServer = async (url) => {
     const res = await fetch(apiUrl('api/youtube'), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'usersessionid': getUserSessionId() },
       body: JSON.stringify({ url })
     });
 
@@ -142,6 +142,7 @@ const SourcesPanel = ({ sources, onAddSource, onNewChat, onRemoveSource }) => {
 
     const res = await fetch(apiUrl('api/upload/'), {
       method: 'POST',
+      headers: { 'usersessionid': getUserSessionId() },
       body: formData,
     });
 
@@ -170,7 +171,7 @@ const SourcesPanel = ({ sources, onAddSource, onNewChat, onRemoveSource }) => {
   const uploadPlainTextToServer = async (text) => {
     const res = await fetch(apiUrl('api/plaintext'), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'usersessionid': getUserSessionId() },
       body: JSON.stringify({ text })
     });
 
