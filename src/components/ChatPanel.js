@@ -68,20 +68,62 @@ const ChatPanel = ({ chatHistory, currentInput, setCurrentInput, onSubmit, onCop
     }
   };
 
+  const recognitionRef = useRef(null);
+
   const handleAudioInput = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setAudioText('Speech recognition is not supported in this browser.');
+      setIsListening(false);
+      return;
+    }
+
     if (isListening) {
       setIsListening(false);
-      if (audioText.trim()) {
-        setCurrentInput(audioText);
-        setAudioText('');
-      }
-    } else {
-      setIsListening(true);
-      setTimeout(() => {
-        setIsListening(false);
-        setAudioText('This is a simulated audio input. In a real app, this would be actual speech recognition.');
-      }, 2000);
+      recognitionRef.current && recognitionRef.current.stop();
+      return;
     }
+
+    const recognition = new SpeechRecognition();
+    recognitionRef.current = recognition;
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    let finalTranscript = '';
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      setAudioText('');
+    };
+
+    recognition.onresult = (event) => {
+      let interim = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const result = event.results[i];
+        if (result.isFinal) {
+          finalTranscript += result[0].transcript;
+        } else {
+          interim += result[0].transcript;
+        }
+      }
+      const combined = (finalTranscript + ' ' + interim).trim();
+      setAudioText(combined);
+      setCurrentInput(combined);
+    };
+
+    recognition.onerror = () => {
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+      if (audioText.trim()) {
+        setCurrentInput(audioText.trim());
+      }
+    };
+
+    recognition.start();
   };
 
   const normalizeResponse = (raw) => {
