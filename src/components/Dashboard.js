@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { apiUrl } from '../config';
 import Header from './DashboardHeader';
 import SourcesPanel from './SourcesPanel';
 import ChatPanel from './ChatPanel';
@@ -116,7 +117,7 @@ const Dashboard = ({ onNavigateToLanding }) => {
     setCurrentInput('');
 
     try {
-      const response = await fetch(process.env.NEXT_PUBLIC_BACKEND_BASE_URL + 'api/search/', {
+      const response = await fetch(apiUrl('api/search/'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

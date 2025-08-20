@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { apiUrl } from '../config';
 
 
 const SourcesPanel = ({ sources, onAddSource }) => {
@@ -61,34 +62,13 @@ const SourcesPanel = ({ sources, onAddSource }) => {
     }
   };
 
-  const validateYoutubeUrl = async (url) => {
+  const validateYoutubeUrl = (url) => {
     try {
       const urlObj = new URL(url);
       if (!urlObj.hostname.includes('youtube.com') && !urlObj.hostname.includes('youtu.be')) {
         return 'Please enter a valid YouTube URL (youtube.com or youtu.be)';
       }
-      
-      const res = await fetch(process.env.NEXT_PUBLIC_BACKEND_BASE_URL + 'api/youtube', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url })
-      });
-  
-      let payload;
-      try {
-        payload = await res.json();
-      } catch {
-        const t = await res.text();
-        payload = { data: t };
-      }
-  
-      if (!res.ok) {
-        throw new Error(payload?.data || `Upload failed with status ${res.status}`);
-      }
-  
-      const message = String(payload?.data || 'Indexing Completed for the given text');
-      return message;
-
+      return null;
     } catch {
       return 'Please enter a valid YouTube URL';
     }
@@ -103,11 +83,34 @@ const SourcesPanel = ({ sources, onAddSource }) => {
     return null; // No error
   };
 
+  const uploadYoutubeToServer = async (url) => {
+    const res = await fetch(apiUrl('api/youtube'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
+
+    let payload;
+    try {
+      payload = await res.json();
+    } catch {
+      const t = await res.text();
+      payload = { data: t };
+    }
+
+    if (!res.ok) {
+      throw new Error(payload?.data || `Upload failed with status ${res.status}`);
+    }
+
+    const message = String(payload?.data || 'Indexing Completed for the given video');
+    return message;
+  };
+
   const uploadFileToServer = async (file) => {
     const formData = new FormData();
     formData.append('file', file);
 
-    const res = await fetch(process.env.NEXT_PUBLIC_BACKEND_BASE_URL = 'api/upload/', {
+    const res = await fetch(apiUrl('api/upload/'), {
       method: 'POST',
       body: formData,
     });
@@ -135,7 +138,7 @@ const SourcesPanel = ({ sources, onAddSource }) => {
   };
 
   const uploadPlainTextToServer = async (text) => {
-    const res = await fetch(process.env.NEXT_PUBLIC_BACKEND_BASE_URL + 'api/plaintext', {
+    const res = await fetch(apiUrl('api/plaintext'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text })
@@ -236,8 +239,9 @@ const SourcesPanel = ({ sources, onAddSource }) => {
     setUrlInput('');
   };
 
-  const handleYoutubeUpload = () => {
+  const handleYoutubeUpload = async () => {
     setYoutubeError(''); // Clear previous errors
+    setUploadSuccess('');
     
     if (!youtubeInput.trim()) {
       setYoutubeError('Please enter a YouTube URL');
@@ -250,21 +254,31 @@ const SourcesPanel = ({ sources, onAddSource }) => {
       return;
     }
 
-    const source = {
-      id: Date.now(),
-      type: 'youtube',
-      name: youtubeInput,
-      timestamp: new Date().toLocaleString('en-US', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      })
-    };
-    onAddSource(source);
-    setYoutubeInput('');
+    setUploading(true);
+    try {
+      const msg = await uploadYoutubeToServer(youtubeInput.trim());
+      setUploadSuccess(msg);
+
+      const source = {
+        id: Date.now(),
+        type: 'youtube',
+        name: youtubeInput.trim(),
+        timestamp: new Date().toLocaleString('en-US', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        })
+      };
+      onAddSource(source);
+      setYoutubeInput('');
+    } catch (err) {
+      setYoutubeError(err?.message || String(err));
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleTextUpload = async () => {
