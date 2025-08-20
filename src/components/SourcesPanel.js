@@ -469,6 +469,13 @@ const SourcesPanel = ({ sources, onAddSource, onNewChat }) => {
               </button>
             </div>
             
+            {uploading && uploadType === 'file' && (
+              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg flex items-center space-x-2">
+                <span className="inline-block w-4 h-4 border-2 border-current/40 border-t-current rounded-full animate-spin" />
+                <span className="text-sm text-blue-700 dark:text-blue-300">Processing...</span>
+              </div>
+            )}
+
             {/* Success Display */}
             {uploadSuccess && (
               <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center justify-between">
@@ -528,6 +535,13 @@ const SourcesPanel = ({ sources, onAddSource, onNewChat }) => {
               </button>
             </div>
             
+            {uploading && uploadType === 'website' && (
+              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg flex items-center space-x-2">
+                <span className="inline-block w-4 h-4 border-2 border-current/40 border-t-current rounded-full animate-spin" />
+                <span className="text-sm text-blue-700 dark:text-blue-300">Processing website…</span>
+              </div>
+            )}
+
             {/* Website Success Display */}
             {uploadSuccess && uploadType === 'website' && (
               <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center justify-between">
@@ -587,6 +601,13 @@ const SourcesPanel = ({ sources, onAddSource, onNewChat }) => {
               </button>
             </div>
             
+            {uploading && uploadType === 'youtube' && (
+              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg flex items-center space-x-2">
+                <span className="inline-block w-4 h-4 border-2 border-current/40 border-t-current rounded-full animate-spin" />
+                <span className="text-sm text-blue-700 dark:text-blue-300">Processing YouTube link…</span>
+              </div>
+            )}
+
             {/* YouTube Success Display */}
             {uploadSuccess && uploadType === 'youtube' && (
               <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center justify-between">
@@ -654,6 +675,13 @@ const SourcesPanel = ({ sources, onAddSource, onNewChat }) => {
               </div>
             </div>
             
+            {uploading && uploadType === 'text' && (
+              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg flex items-center space-x-2">
+                <span className="inline-block w-4 h-4 border-2 border-current/40 border-t-current rounded-full animate-spin" />
+                <span className="text-sm text-blue-700 dark:text-blue-300">Processing text…</span>
+              </div>
+            )}
+
             {/* Text Success Display */}
             {uploadSuccess && uploadType === 'text' && (
               <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center justify-between">
