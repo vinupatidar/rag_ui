@@ -7,7 +7,7 @@ function ensureTrailingSlash(url) {
 }
 
 export const BACKEND_BASE_URL = ensureTrailingSlash(
-  process.env.REACT_APP_BACKEND_BASE_URL || 'http://localhost:4000/'
+  process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:4000/'
 );
 
 export function apiUrl(path) {
