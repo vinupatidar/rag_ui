@@ -53,6 +53,7 @@ const CodePreview = ({ language, content, isDark }) => {
 const ChatPanel = ({ chatHistory, currentInput, setCurrentInput, onSubmit, onCopyResponse }) => {
   const [isListening, setIsListening] = useState(false);
   const [audioText, setAudioText] = useState('');
+  const [micError, setMicError] = useState('');
   const chatEndRef = useRef(null);
 
   useEffect(() => {
@@ -70,10 +71,10 @@ const ChatPanel = ({ chatHistory, currentInput, setCurrentInput, onSubmit, onCop
 
   const recognitionRef = useRef(null);
 
-  const handleAudioInput = () => {
+  const handleAudioInput = async () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      setAudioText('Speech recognition is not supported in this browser.');
+      setMicError('Speech recognition is not supported in this browser. Try Chrome on desktop.');
       setIsListening(false);
       return;
     }
@@ -84,17 +85,36 @@ const ChatPanel = ({ chatHistory, currentInput, setCurrentInput, onSubmit, onCop
       return;
     }
 
+    // Require secure context except localhost
+    const isLocalhost = typeof window !== 'undefined' && /localhost|127\.0\.0\.1/.test(window.location.hostname);
+    if (!isLocalhost && typeof window !== 'undefined' && !window.isSecureContext) {
+      setMicError('Microphone requires HTTPS. Please use a secure (https) URL.');
+      return;
+    }
+
+    // Prompt mic permission proactively in some browsers
+    try {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+      }
+    } catch (e) {
+      setMicError('Microphone permission denied or unavailable. Check browser/site settings.');
+      return;
+    }
+
     const recognition = new SpeechRecognition();
     recognitionRef.current = recognition;
     recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = 'en-US';
+    recognition.maxAlternatives = 1;
 
     let finalTranscript = '';
 
     recognition.onstart = () => {
       setIsListening(true);
       setAudioText('');
+      setMicError('');
     };
 
     recognition.onresult = (event) => {
@@ -112,8 +132,20 @@ const ChatPanel = ({ chatHistory, currentInput, setCurrentInput, onSubmit, onCop
       setCurrentInput(combined);
     };
 
-    recognition.onerror = () => {
+    recognition.onerror = (event) => {
       setIsListening(false);
+      const err = event && event.error ? String(event.error) : 'unknown-error';
+      if (err === 'not-allowed' || err === 'service-not-allowed') {
+        setMicError('Microphone access blocked. Allow mic in browser/site settings and try again.');
+      } else if (err === 'no-speech') {
+        setMicError('No speech detected. Please try again.');
+      } else if (err === 'audio-capture') {
+        setMicError('No microphone found. Check your audio device.');
+      } else if (err === 'network') {
+        setMicError('Network error with speech service. Try again.');
+      } else {
+        setMicError('Speech recognition error. Please try again.');
+      }
     };
 
     recognition.onend = () => {
@@ -383,6 +415,27 @@ const ChatPanel = ({ chatHistory, currentInput, setCurrentInput, onSubmit, onCop
             <span>Send</span>
           </button>
         </form>
+
+        {micError && (
+          <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2 text-red-700 dark:text-red-300">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-sm font-medium">{micError}</span>
+              </div>
+              <button
+                onClick={() => setMicError('')}
+                className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
 
         {isListening && (
           <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
