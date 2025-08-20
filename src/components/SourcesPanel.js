@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { apiUrl } from '../config';
 
 
-const SourcesPanel = ({ sources, onAddSource }) => {
+const SourcesPanel = ({ sources, onAddSource, onNewChat }) => {
   const [uploadType, setUploadType] = useState('file');
   const [fileInput, setFileInput] = useState(null);
   const [urlInput, setUrlInput] = useState('');
@@ -56,6 +56,10 @@ const SourcesPanel = ({ sources, onAddSource }) => {
       if (!urlObj.protocol.startsWith('http')) {
         return 'Please enter a valid website URL starting with http:// or https://';
       }
+      const hostname = urlObj.hostname.toLowerCase();
+      if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) {
+        return 'YouTube links are not allowed here. Please use the YouTube tab for YouTube URLs.';
+      }
       return null; // No error
     } catch {
       return 'Please enter a valid website URL';
@@ -65,8 +69,10 @@ const SourcesPanel = ({ sources, onAddSource }) => {
   const validateYoutubeUrl = (url) => {
     try {
       const urlObj = new URL(url);
-      if (!urlObj.hostname.includes('youtube.com') && !urlObj.hostname.includes('youtu.be')) {
-        return 'Please enter a valid YouTube URL (youtube.com or youtu.be)';
+      const hostname = urlObj.hostname.toLowerCase();
+      const isYouTube = hostname.includes('youtube.com') || hostname.includes('youtu.be');
+      if (!isYouTube) {
+        return 'Only YouTube URLs are allowed in this field (youtube.com or youtu.be)';
       }
       return null;
     } catch {
@@ -81,6 +87,30 @@ const SourcesPanel = ({ sources, onAddSource }) => {
       return 'Text contains special characters that are not allowed. Please remove: < > { } [ ] \\ | ` ~ ! @ # $ % ^ & * ( ) + = ; : \' " ?';
     }
     return null; // No error
+  };
+
+  const uploadWebsiteToServer = async (url) => {
+    const res = await fetch(apiUrl('api/website/'), {
+      method: 'POST',
+      mode: 'cors',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ url })
+    });
+
+    let payload;
+    try {
+      payload = await res.json();
+    } catch {
+      const t = await res.text();
+      payload = { data: t };
+    }
+
+    if (!res.ok) {
+      throw new Error(payload?.data || `Upload failed with status ${res.status}`);
+    }
+
+    const message = String(payload?.data || 'Indexing Completed for the given website');
+    return message;
   };
 
   const uploadYoutubeToServer = async (url) => {
@@ -208,8 +238,9 @@ const SourcesPanel = ({ sources, onAddSource }) => {
     event.target.value = '';
   };
 
-  const handleWebsiteUpload = () => {
+  const handleWebsiteUpload = async () => {
     setWebsiteError(''); // Clear previous errors
+    setUploadSuccess('');
     
     if (!urlInput.trim()) {
       setWebsiteError('Please enter a website URL');
@@ -222,21 +253,31 @@ const SourcesPanel = ({ sources, onAddSource }) => {
       return;
     }
 
-    const source = {
-      id: Date.now(),
-      type: 'website',
-      name: urlInput,
-      timestamp: new Date().toLocaleString('en-US', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      })
-    };
-    onAddSource(source);
-    setUrlInput('');
+    setUploading(true);
+    try {
+      const msg = await uploadWebsiteToServer(urlInput.trim());
+      setUploadSuccess(msg);
+
+      const source = {
+        id: Date.now(),
+        type: 'website',
+        name: urlInput.trim(),
+        timestamp: new Date().toLocaleString('en-US', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        })
+      };
+      onAddSource(source);
+      setUrlInput('');
+    } catch (err) {
+      setWebsiteError(err?.message || String(err));
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleYoutubeUpload = async () => {
@@ -341,8 +382,9 @@ const SourcesPanel = ({ sources, onAddSource }) => {
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Sources</h2>
         
         {/* Upload Type Tabs */}
-        <div className="flex space-x-2 mb-4">
-          <button
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex space-x-2">
+            <button
             onClick={() => setUploadType('file')}
             disabled={uploading}
             className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
@@ -350,10 +392,10 @@ const SourcesPanel = ({ sources, onAddSource }) => {
                 ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
             } ${uploading ? 'opacity-60 cursor-not-allowed' : ''}`}
-          >
-            Files
-          </button>
-          <button
+            >
+              Files
+            </button>
+            <button
             onClick={() => setUploadType('website')}
             disabled={uploading}
             className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
@@ -361,10 +403,10 @@ const SourcesPanel = ({ sources, onAddSource }) => {
                 ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
             } ${uploading ? 'opacity-60 cursor-not-allowed' : ''}`}
-          >
-            Website
-          </button>
-          <button
+            >
+              Website
+            </button>
+            <button
             onClick={() => setUploadType('youtube')}
             disabled={uploading}
             className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
@@ -372,10 +414,10 @@ const SourcesPanel = ({ sources, onAddSource }) => {
                 ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
             } ${uploading ? 'opacity-60 cursor-not-allowed' : ''}`}
-          >
-            YouTube
-          </button>
-          <button
+            >
+              YouTube
+            </button>
+            <button
             onClick={() => setUploadType('text')}
             disabled={uploading}
             className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
@@ -383,9 +425,21 @@ const SourcesPanel = ({ sources, onAddSource }) => {
                 ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
             } ${uploading ? 'opacity-60 cursor-not-allowed' : ''}`}
-          >
-            Text
-          </button>
+            >
+              Text
+            </button>
+          </div>
+          <div>
+            <button
+              type="button"
+              onClick={() => onNewChat && onNewChat()}
+              disabled={uploading}
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 ${uploading ? 'opacity-60 cursor-not-allowed' : ''}`}
+              title="Start a new chat"
+            >
+              New Chat
+            </button>
+          </div>
         </div>
 
         {/* File Upload Section */}
@@ -474,6 +528,28 @@ const SourcesPanel = ({ sources, onAddSource }) => {
               </button>
             </div>
             
+            {/* Website Success Display */}
+            {uploadSuccess && uploadType === 'website' && (
+              <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center justify-between">
+                <div className="flex items-center space-x-2 text-green-700 dark:text-green-300">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-sm font-medium">{uploadSuccess}</span>
+                </div>
+                <button
+                  onClick={() => setUploadSuccess('')}
+                  className="ml-3 p-1 rounded hover:bg-green-100 dark:hover:bg-green-800/40"
+                  aria-label="Close success message"
+                  title="Close"
+                >
+                  <svg className="w-4 h-4 text-green-700 dark:text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            )}
+
             {/* Website Error Display */}
             {websiteError && (
               <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
@@ -511,6 +587,28 @@ const SourcesPanel = ({ sources, onAddSource }) => {
               </button>
             </div>
             
+            {/* YouTube Success Display */}
+            {uploadSuccess && uploadType === 'youtube' && (
+              <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center justify-between">
+                <div className="flex items-center space-x-2 text-green-700 dark:text-green-300">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-sm font-medium">{uploadSuccess}</span>
+                </div>
+                <button
+                  onClick={() => setUploadSuccess('')}
+                  className="ml-3 p-1 rounded hover:bg-green-100 dark:hover:bg-green-800/40"
+                  aria-label="Close success message"
+                  title="Close"
+                >
+                  <svg className="w-4 h-4 text-green-700 dark:text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            )}
+
             {/* YouTube Error Display */}
             {youtubeError && (
               <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">

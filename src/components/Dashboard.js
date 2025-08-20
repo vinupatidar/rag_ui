@@ -100,6 +100,13 @@ const Dashboard = ({ onNavigateToLanding }) => {
     setSources([...sources, source]);
   };
 
+  const handleNewChat = () => {
+    setChatHistory([]);
+    try {
+      localStorage.setItem('chatHistory', JSON.stringify([]));
+    } catch {}
+  };
+
   const handleChatSubmit = async (message) => {
     if (!message.trim()) return;
 
@@ -206,7 +213,8 @@ const Dashboard = ({ onNavigateToLanding }) => {
         <div className="w-1/3 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
           <SourcesPanel 
             sources={sources} 
-            onAddSource={handleAddSource} 
+            onAddSource={handleAddSource}
+            onNewChat={handleNewChat}
           />
         </div>
         
